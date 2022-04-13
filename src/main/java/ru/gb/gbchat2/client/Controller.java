@@ -7,13 +7,18 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.ListView;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
+import ru.gb.gbchat2.Command;
 
 public class Controller {
 
+    @FXML
+    private ListView<String> clientList;
     @FXML
     private HBox messageBox;
     @FXML
@@ -56,13 +61,12 @@ public class Controller {
     }
 
     public void btnAuthClick(ActionEvent actionEvent) {
-        client.sendMessage("/auth " + loginField.getText() + " " + passwordField.getText());
+        client.sendMessage(Command.AUTH, loginField.getText(), passwordField.getText());
     }
 
     public void setAuth(boolean success) {
         loginBox.setVisible(!success);
         messageBox.setVisible(success);
-        textArea.setVisible(success);
     }
 
     private void showNotification() {
@@ -79,4 +83,24 @@ public class Controller {
         }
     }
 
+    public void showError(String[] error) {
+        final Alert alert = new Alert(Alert.AlertType.ERROR, error[0], new ButtonType("OK", ButtonBar.ButtonData.OK_DONE));
+        alert.setTitle("Ошибка!");
+        alert.showAndWait();
+    }
+
+    public void selectClient(MouseEvent mouseEvent) {
+        if (mouseEvent.getClickCount() == 2) { // /w nick1 private message
+            final String message = textField.getText();
+            final String nick = clientList.getSelectionModel().getSelectedItem();
+            textField.setText(Command.PRIVATE_MESSAGE.collectMessage(nick, message));
+            textField.requestFocus();
+            textField.selectEnd();
+        }
+    }
+
+    public void updateClientList(String[] params) {
+        clientList.getItems().clear();
+        clientList.getItems().addAll(params);
+    }
 }
